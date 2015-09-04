@@ -1,6 +1,5 @@
-# [![seo, web design, lawyer marketing, realtor marketing, chimney sweep
-marketing][1]White Fox Studios][2] | [North Carolina SEO][3] and [North
-Carolina Web Design][4]
+# [White Fox Studios][2]
+## [North Carolina SEO][3] and [North Carolina Web Design][4]
 
 545 Walnut St Waynesville, NC 28786
 
@@ -26,7 +25,8 @@ North Carolina Web Design)
    [3]: http://whitefoxstudios.net/asheville-seo (North Carolina SEO | White
 Fox Studios)
 
-   [4]: http://whitefoxstudios.net/asheville-web-design ()
+   [4]: http://whitefoxstudios.net/asheville-web-design (North Carolina Web Design | White
+Fox Studios)
 
    [5]: tel:+18282469552
 
