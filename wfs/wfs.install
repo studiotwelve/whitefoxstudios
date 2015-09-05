@@ -1,0 +1,26 @@
+<?php
+function wfs_install(){
+  $vars = array(
+    "wfs_modernizr.js" => TRUE,
+    "wfs_migrate.js" => TRUE,
+    "wfs_fix.js" => TRUE,
+    "wfs_fix.css" => TRUE,
+  );
+
+  foreach($vars as $name => $value){
+    variable_set($name, $value);
+  }
+}
+
+function wfs_uninstall(){
+  $vars = array(
+    "wfs_modernizr.js" => TRUE,
+    "wfs_migrate.js" => TRUE,
+    "wfs_fix.js" => TRUE,
+    "wfs_fix.css" => TRUE,
+  );
+
+  foreach($vars as $name => $value){
+    variable_del($name);
+  }
+}

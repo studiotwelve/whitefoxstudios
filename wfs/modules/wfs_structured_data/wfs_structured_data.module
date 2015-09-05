@@ -1,0 +1,49 @@
+<?php
+function wfs_structured_data_menu() {
+  $items['admin/white-fox-studios/structured-data'] = array(
+    'title' => 'Structured Data',
+    'description' => 'Configure settings associated with Google Structured Data.',
+    'access arguments' => array('administer site configuration'),
+  );
+  
+  $items['admin/white-fox-studios/structured-data/sitelinks_search_box'] = array(
+    'title' => 'Google Sitelinks Search Box',
+    'description' => 'Configure settings associated with Google Sitelinks Search Box.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wfs_structured_data_sitelinks_search_box_form', NULL),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'wfs_structured_data_sitelinks_search_box_form.inc',
+  );
+
+  return $items;
+}
+
+function wfs_structured_data_preprocess_html(&$vars){
+  global $base_url;
+
+  $u = $base_url;
+  $s = <<<EOL
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "WebSite",
+  "url": "$u",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "$u/?q=search/node/{search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+EOL;
+  
+  $e = array(
+    "#type" => "markup",
+//    "#markup" => variable_get("wfs_structured_data_sitelinks_search_box", $s),
+    "#markup" => $s,
+  );
+  
+  if(drupal_is_front_page()){
+    drupal_add_html_head($e, "wfs_structured_data_siteLinks_search_box");
+  }
+}

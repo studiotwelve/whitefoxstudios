@@ -1,0 +1,4 @@
+name = @White Fox Studios: Structured Data
+description = Provides JSON-ld Google Structured Data Snippets.
+package = @WhiteFoxStudios
+core = 7.x

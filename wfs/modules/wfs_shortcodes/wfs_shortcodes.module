@@ -1,0 +1,238 @@
+<?php
+function wfs_shortcodes_shortcode_info() {
+  $shortcodes['block'] = array(
+    'title' => t('Block'),
+    'description' => t('Render block.'),
+    'process callback' => 'wfs_shortcodes_shortcode_block',
+    'process backend callback' => 'wfs_shortcodes_backend_nochilds',
+    'process settings callback' => 'wfs_shortcodes_shortcode_block_settings',
+    'icon' => 'fa fa-file',
+    'tips callback' => 'wfs_shortcodes_shortcode_block_tip',
+    'description_callback' => 'wfs_shortcodes_shortcode_block_description',
+  );
+
+  $shortcodes['view'] = array(
+    'title' => t('View'),
+    'description' => t('Embed content - rendered View.'),
+    'process callback' => 'wfs_shortcodes_shortcode_view',
+    'process backend callback' => 'wfs_shortcodes_backend_nochilds',
+    'process settings callback' => 'wfs_shortcodes_shortcode_view_settings',
+    'tips callback' => 'wfs_shortcodes_shortcode_view_tip',
+    'icon' => 'fa fa-sun-o',
+    'description_callback' => 'wfs_shortcodes_shortcode_view_description',
+  );
+
+  return $shortcodes;
+}
+
+function _wfs_shortcodes_shortcode_attributes($attrs) {
+  if(empty($attrs)) {
+    return '';
+  }
+  $allowed_attributes = array('class' => 'class', 'extra_classes' => 'class', 'href' => 'href', 'id' => 'id', 'animation' => 'data-appear-animation', 'animation_delay' => 'data-appear-animation-delay', 'style' => 'style');
+  if (isset($attrs['link']) && $attrs['link'] == $_GET['q']) {
+    $attrs['class'] = (isset($attrs['class']) ? $attrs['class'] : '') . ' active';
+  }
+  $output = '';
+  $attrs_array = array();
+  foreach($attrs as $name => $value) {
+    $value = trim($value);
+    if(strpos($name, 'style_') === 0) {
+      $value_style = str_replace(array('style_', '_'), array('', '-'), $name);
+      if(strpos($value_style, 'border-radius') !== FALSE) {
+        $value = strpos($value, '%') !== FALSE ? $value : (int)$value . 'px;';
+        $value = '-webkit-' . $value_style. ': ' . $value . '; -moz-' . $value_style. ': ' . $value . '; ' . $value_style. ': ' . $value . ';';
+      }
+      elseif(strpos($name, 'margin') !== FALSE || strpos($name, 'padding') !== FALSE || strpos($name, 'width') !== FALSE || strpos($name, 'height') !== FALSE) {
+        $value = strpos($value, '%') !== FALSE ? $value : (int)$value . 'px;';
+        $value =  $value_style . ': ' . $value;
+      }
+      elseif(strpos($name, 'color') !== FALSE) {
+        $value =  $value_style . ': #' . trim($value, '#') . ';';
+      }
+      elseif(strpos($value_style, 'image') !== FALSE) {
+        $file = file_load($value);
+        $filename = isset($file->uri) ? file_create_url($file->uri) : '';
+        $value =  $value_style . ': url("' . $filename . '");';
+      }
+      else {
+        $value = $value_style . ': ' . $value . ';';
+      }
+      $name = 'style';
+    }
+    if(isset($allowed_attributes[$name])) {
+      $name = $allowed_attributes[$name];
+      if ($value !== '') {
+        $attrs_array[$name] = (isset($attrs_array[$name]) ? $attrs_array[$name] . ' ' : '') . $value;
+      }
+    }
+    elseif(strpos($name, 'data-') === 0) {
+      if ($value !== '') {
+        $attrs_array[$name] = (isset($attrs_array[$name]) ? $attrs_array[$name] . ' ' : '') . $value;
+      }
+    }
+  }
+  if(isset($attrs['style_background_color']) && strtolower(trim($attrs['style_background_color'], '#')) == '000000') {
+    $attrs_array['class'] = (isset($attrs_array['class']) ? $attrs_array['class'] : '') . ' text-white';
+  }
+  if(isset($attrs['style_background_color']) && strtolower(trim($attrs['style_background_color'], '#')) == 'ffffff') {
+    $attrs_array['class'] = (isset($attrs_array['class']) ? $attrs_array['class'] : '') . ' text-black';
+  }
+  if(isset($attrs['text_align']) && $attrs['text_align']) {
+    $attrs_array['style'] = (isset($attrs_array['style']) ? $attrs_array['style'] : '') . ' text-align:'. $attrs['text_align'] . ';';
+  }
+
+  foreach($attrs_array as $name => $value) {
+    $output .= " $name = '$value'";
+  }
+  return $output;
+}
+
+function wfs_shortcodes_shortcode_block($attrs, $text) {
+  if (strpos($attrs['admin_url'], 'admin/structure/block') !== FALSE) {
+    $block_name = substr($attrs['admin_url'], strpos($attrs['admin_url'], '/manage/') + 8);
+    $parts = explode('/', $block_name);
+    $block = _wfs_render_block($parts[0], $parts[1]);
+    $block = render($block);
+  }
+  $attrs_output = _wfs_shortcodes_shortcode_attributes($attrs);
+  $text = $attrs_output ? '<div ' . $attrs_output  . '>' . $block . '</div>' : $block;
+  return $text;
+}
+
+function wfs_shortcodes_shortcode_block_tip($format, $long) {
+  $output = array();
+  $output[] = '<p><strong>Block:</strong><br/>[block admin_url="admin/structure/block/manage/progressive_cms/gmap/configure"][/block]</br>';
+  $output[] = '<strong>admin_url</strong> - URL of the block edit page.</p>';
+  return implode(' ', $output);
+}
+
+function wfs_shortcodes_shortcode_block_settings($attrs, $text) {
+  module_load_include('inc', 'block', 'block.admin');
+  $current_theme = variable_get('theme_default', 'none');
+  $blocks = block_admin_display_prepare_blocks($current_theme);
+  usort($blocks, '_sort_blocks');
+  $options = array();
+  foreach ($blocks as $block) {
+    $options['admin/structure/block/manage/' . $block['module']  .'/' . $block['delta'] . '/configure'] = check_plain($block['info']);
+  }
+  asort($options);
+  $form['admin_url'] = array(
+    '#title' => t('Block'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#default_value' => isset($attrs['admin_url']) ? $attrs['admin_url'] : '',
+    '#attributes' => array('class' => array('form-control'))
+  );
+  return $form;
+}
+
+function wfs_shortcodes_shortcode_block_description($attrs, $text) {
+  if (strpos($attrs['admin_url'], 'admin/structure/block') !== FALSE) {
+    $form = wfs_shortcodes_shortcode_block_settings($attrs, $text);
+    $value = $form['admin_url']['#options'][$attrs['admin_url']];
+    return $value;
+  }
+}
+
+function wfs_shortcodes_shortcode_view($attrs, $text) {
+  $attrs['class'] = isset($attrs['class']) ? $attrs['class'] : '';
+  if (strpos($attrs['admin_url'], 'admin/structure/views/view') !== FALSE) {
+    $view_name = substr($attrs['admin_url'], strpos($attrs['admin_url'], 'view/') + 5);
+    $parts = explode('/', $view_name);
+    $view_name = $parts[0];
+    $view = isset($parts[2]) ? views_embed_view($view_name, $parts[2]) : views_embed_view($view_name);
+  }
+  $text = '<div ' . _wfs_shortcodes_shortcode_attributes($attrs)  . '>' . $view . '</div>';
+  return $text;
+}
+
+function wfs_shortcodes_shortcode_view_tip($format, $long) {
+  $output = array();
+  $output[] = '<p><strong>View embed:</strong><br/>[view admin_url="admin/structure/views/view/blog"][/view]</br>';
+  $output[] = '<strong>admin_url</strong> - Administrative url of required view display.</p>';
+  return implode(' ', $output);
+}
+
+function wfs_shortcodes_shortcode_view_description($attrs, $text) {
+  if (strpos($attrs['admin_url'], 'admin/structure/views/view') !== FALSE) {
+    $form = wfs_shortcodes_shortcode_view_settings($attrs, $text);
+    $value = $form['admin_url']['#options'][$attrs['admin_url']];
+    return $value;
+  }
+}
+
+function wfs_shortcodes_shortcode_view_settings($attrs, $text) {
+  $query = db_select('views_display', 'v');
+  $query->leftJoin('views_view', 'vv', 'vv.vid = v.vid');
+  $return = $query
+    ->fields('v', array('id', 'display_title'))
+    ->fields('vv', array('name', 'human_name'))
+    ->condition('v.display_title', 'Master', '<>')
+    ->execute();
+  $views = array();
+  foreach ($return as $row) {
+    $views['admin/structure/views/view/' . $row->name . '/edit/' . $row->id] = check_plain($row->human_name . ': ' . $row->display_title);
+  }
+  asort($views);
+  $form['admin_url'] = array(
+    '#title' => t('View'),
+    '#type' => 'select',
+    '#options' => $views,
+    '#default_value' => isset($attrs['admin_url']) ? $attrs['admin_url'] : '',
+    '#attributes' => array('class' => array('form-control'))
+  );
+  return $form;
+}
+
+function _wfs_shortcodes_backend_description($attrs, $text) {
+  $description = '';
+  $shortcodes = shortcode_list_all();
+  if(isset($shortcodes[$attrs['shortcode']]['description_field'])) {
+    $field = $shortcodes[$attrs['shortcode']]['description_field'];
+    if(isset($attrs[$field]) && $attrs[$field]) {
+      $description = ' <small>(' . truncate_utf8($attrs[$field], 40, TRUE, TRUE) . ')</small>';
+    }
+    elseif($attrs['shortcode'] == 'html') {
+      $text = trim(strip_tags($text));
+      $description = $text ? ' <small>(' . truncate_utf8($text, 30, TRUE, TRUE) . ')</small>' : '';
+    }
+  }
+  elseif(isset($shortcodes[$attrs['shortcode']]['description_callback'])) {
+    $text = call_user_func($shortcodes[$attrs['shortcode']]['description_callback'], $attrs, $text);
+    $description = $text ? ' <small>(' . $text . ')</small>' : '';
+  }
+  return $description;
+}
+
+function _wfs_shortcodes_backend_element($attrs, $text, $el = '') {
+  $shortcodes = shortcode_list_all();
+  if(isset($attrs['class'])) {
+    $attrs['extra_classes'] = $attrs['class'] . (isset($attrs['extra_classes']) ? ' ' . $attrs['extra_classes'] : '');
+  }
+  $attrs['class'] = 'row shortcode-processed wfs-shortcodes-sortable wfs-shortcodes-parent-wrap';
+  $attrs['shortcode'] = $el;
+  $title = is_array($shortcodes[$el]['title']) ? '' : $shortcodes[$el]['title'];
+  $text = is_array($text) ? '' : $text;
+  return '<li ' . drupal_attributes($attrs) . '><div class = "border-style clearfix"><h3><i class="fa fa-arrows"></i><span>' . $title . _wfs_shortcodes_backend_description($attrs, $text) . '</span><span class = "wfs-shortcodes-settings-links"><i class="fa fa-copy wfs-shortcodes-copy"></i><i class="fa fa-plus-square wfs_shortcodes_add"></i><i class="fa fa-edit shortcode-settings"></i></span></h3><ol class = "wfs-shortcodes-parent">' . $text . '</ol></div></li>';
+}
+
+function wfs_shortcodes_backend_nochilds($attrs, $text, $el = '') {
+  $text = trim($text);
+  // In old code can be stored text inside nochild element, show for this case default element
+  if(!empty($text) && $el != 'html') {
+    return _wfs_shortcodes_backend_element($attrs, $text, $el);
+  }
+  $shortcodes = shortcode_list_all();
+  if(isset($attrs['class'])) {
+    $attrs['extra_classes'] = $attrs['class'] . (isset($attrs['extra_classes']) ? ' ' . $attrs['extra_classes'] : '');
+  }
+  $attrs['class'] = 'row shortcode-processed wfs-shortcodes-sortable';
+  $attrs['shortcode'] = $el;
+  return '<li ' . drupal_attributes($attrs) . '><div class = "border-style border-none clearfix"><h3><i class="fa fa-arrows"></i><span>' . $shortcodes[$el]['title'] . _wfs_shortcodes_backend_description($attrs, $text) . '</span><span class = "wfs-shortcodes-settings-links"><i class="fa fa-copy wfs-shortcodes-copy"></i><i class="fa fa-edit shortcode-settings"></i></span></h3><div class = "hidden">' . $text . '</div></div></li>';
+}
+
+function _wfs_render_block($module, $delta) {
+  $block = block_load($module, $delta);
+  return isset($block->theme) ? _block_get_renderable_array(_block_render_blocks(array($block))) : array();
+}

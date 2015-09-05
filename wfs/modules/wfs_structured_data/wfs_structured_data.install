@@ -1,0 +1,41 @@
+<?php
+function wfs_structured_data_install(){
+  global $base_url;
+  $u = $base_url;
+  $s = <<<EOL
+<script type="application/ld+json">
+{
+   "@context": "http://schema.org",
+   "@type": "WebSite",
+   "url": "$u",
+   "potentialAction": {
+     "@type": "SearchAction",
+     "target": "$u/?q=search/node/{search_term_string}",
+     "query-input": "required name=search_term_string"
+   }
+}
+</script>
+EOL;
+
+  variable_set("wfs_structured_data_sitelinks_search_box", $s);
+  
+  cache_clear_all();
+  drupal_set_message("White Fox Studios: Structured Data Installed and Enabled");
+}
+
+function wfs_structured_data_uninstall(){
+  variable_del("wfs_structured_data_sitelinks_search_box");
+  
+  cache_clear_all();
+  drupal_set_message("White Fox Studios: Structured Data Uninstalled.");
+}
+
+function wfs_structured_data_enable(){
+  cache_clear_all();
+  drupal_set_message("White Fox Studios: Structured Data Enabled.");
+}
+
+function wfs_structured_data_disable(){
+  cache_clear_all();
+  drupal_set_message("White Fox Studios: Structured Data Disabled.");
+}

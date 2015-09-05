@@ -1,0 +1,12 @@
+@-webkit-viewport{width:device-width}@-moz-viewport{width:device-width}@-ms-viewport{width:device-width}@-o-viewport{width:device-width}@viewport{width:device-width}
+
+.view-control-seo .form-text,
+.view-control-seo .image-widget,
+.view-control-seo .image-widget-data,
+.view-control-seo .droppable{
+  width:100%; min-width:100px; box-sizing:border-box
+}
+
+.view-control-seo .droppable{
+   float:none
+}

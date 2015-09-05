@@ -1,0 +1,73 @@
+<?php
+function wfs_menu() {
+  $items['admin/white-fox-studios'] = array(
+    'title' => 'White Fox Studios',
+    'description' => 'White Fox Studios Main Menu.',
+    'access arguments' => array('create content'),
+  );
+  
+  $items['admin/white-fox-studios/ux'] = array(
+    'title' => 'UX Settings',
+    'description' => 'Configure settings associated with White Fox Studios User Experience.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wfs_admin_settings_form', NULL),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'wfs.settings.inc',
+  );
+
+  return $items;
+}
+
+function wfs_page_build(&$page){
+  $page["page_bottom"]["whitefox-menu"]=array(
+    "#weight"=>50,
+    "#markup"=>'<div class="whitefox-menu"></div>',
+  );
+
+  _wfs_get_assets();
+}
+
+function _wfs_get_assets(){
+  $var = array(
+    "wfs_modernizr.js" => TRUE,
+    "wfs_migrate.js" => TRUE,
+    "wfs_fix.js" => TRUE,
+  );
+  
+  $opt = array();
+  
+  $opt["wfs_modernizr.js"] = array(
+    "group" => JS_LIBRARY,
+    "every_page" => TRUE,
+    "weight" => -21,
+  );
+  
+  $opt["wfs_migrate.js"] = array(
+    "group" => JS_LIBRARY,
+    "every_page" => TRUE,
+    "weight" => -19,
+  );
+  
+  $opt["wfs_fix.js"] = array(
+    "group" => JS_LIBRARY,
+    "every_page" => TRUE,
+    "weight" => -18,
+  );
+    
+  $path = drupal_get_path("module", "wfs");
+  
+  foreach($var as $name => $value){    
+    if(variable_get($name, $value)){
+      $file = str_replace("wfs_", "", $name);
+      
+      drupal_add_js($path."/js/".$file, $opt[$name]);
+    }
+  }
+  
+  if(variable_get("wfs_fix.css", TRUE)){
+    drupal_add_css($path."/css/fix.css");
+  }
+  
+  drupal_add_css("$path/css/whitefox.css");
+  drupal_add_js("$path/js/whitefox.js",array("scope"=>"footer", "weight"=>5000, "every_page"=>TRUE));
+}

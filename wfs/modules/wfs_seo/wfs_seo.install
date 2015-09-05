@@ -1,0 +1,41 @@
+<?php
+
+function wfs_seo_install(){
+  include_once("wfs_seo.vars.inc");
+
+  $vars = wfs_seo_variables();
+  
+  foreach($vars as $name => $value){
+    variable_set($name, $value);
+  }
+  
+  cache_clear_all();
+  
+  drupal_set_message("all caches cleared!");
+}
+
+function wfs_seo_uninstall(){
+  include_once("wfs_seo.vars.inc");
+
+  $vars = wfs_seo_variables();
+  
+  foreach($vars as $name => $value){
+    variable_del($name, $value);
+  }
+  
+  cache_clear_all();
+  
+  drupal_set_message("all caches cleared!");
+}
+
+function wfs_seo_enable(){
+  cache_clear_all();
+  
+  drupal_set_message("all caches cleared!");
+}
+
+function wfs_seo_disable(){
+  cache_clear_all();
+  
+  drupal_set_message("all caches cleared!");
+}

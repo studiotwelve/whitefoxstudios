@@ -1,0 +1,56 @@
+<?php
+function wfs_seo_menu(){
+  $items['admin/white-fox-studios/seo'] = array(
+    'title' => 'SEO',
+    'description' => 'White Fox SEO: Main Menu',
+    'access arguments' => array('create content'),
+  );
+  
+  $items['admin/white-fox-studios/seo/company-info'] = array(
+    'title' => 'Company Info',
+    'description' => 'White Fox SEO: Company Info Admin.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wfs_seo_company_info_form', NULL),
+    'access arguments' => array('create content'),
+    'file' => 'wfs_seo.settings.inc',
+  );
+  
+  $items['admin/white-fox-studios/seo/company-info/social'] = array(
+    'title' => 'Social Links',
+    'description' => 'White Fox SEO: Company Social Links Admin.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wfs_seo_company_info_social_form', NULL),
+    'access arguments' => array('create content'),
+    'file' => 'wfs_seo.settings.inc',
+  );
+  
+  $items['admin/white-fox-studios/seo/company-info/contact-points'] = array(
+    'title' => 'Contact Points',
+    'description' => 'White Fox SEO: Company Contact Points Admin.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wfs_seo_company_info_contact_points_form', NULL),
+    'access arguments' => array('create content'),
+    'file' => 'wfs_seo.settings.inc',
+  );
+  
+  return $items;
+}
+
+function wfs_seo_preprocess_html(&$variables){
+  include_once("wfs_seo.vars.inc");
+
+  $variables += wfs_seo_vars();
+  $variables += wfs_seo_variables();
+  $seo_json = $variables["wfs_seo_company_json"];
+  
+  $markup = "<script type=\"application/ld+json\">$seo_json</script>";
+  
+  $element = array(
+    "#type" => "markup",
+    "#markup" => "<script type=\"application/ld+json\">$seo_json</script>",
+  );
+  
+  drupal_add_html_head($element, "wfs_seo_company_info");
+  
+  return $variables;
+}

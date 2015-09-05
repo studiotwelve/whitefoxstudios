@@ -1,0 +1,54 @@
+<?php
+
+function wfs_drealty_entity_presave($entity, $type){
+  if($type == "drealty_listing"){
+    $arr = (array) $entity; // convert $entity to array for programatic handling
+
+    $p = "field_rs_";
+    
+    if($entity->type == "commercial_listing"){
+      $p = "field_cm_";
+    }
+        
+    // make and set the title and label from the address fields
+    $title_fields = array(
+      $p."streetnumber" => $arr[$p."streetnumber"][LANGUAGE_NONE][0]["value"],
+      $p."streetname" => $arr[$p."streetname"][LANGUAGE_NONE][0]["value"],
+      $p."mailingcity" => $arr[$p."mailingcity"][LANGUAGE_NONE][0]["value"],
+    );
+    
+    $entity->label = implode($title_fields, " ");
+    $entity->field_listing_title[LANGUAGE_NONE][0]["value"] = $entity->label;
+    
+    // make and set the address
+    $address_fields = array(
+      $p."streetnumber" => $arr[$p."streetnumber"][LANGUAGE_NONE][0]["value"],
+      $p."streetname" => $arr[$p."streetname"][LANGUAGE_NONE][0]["value"],
+      $p."mailingcity" => $arr[$p."mailingcity"][LANGUAGE_NONE][0]["value"].",",
+      $p."stateorprovince" => $arr[$p."stateorprovince"][LANGUAGE_NONE][0]["value"],
+      $p."postalcode" => $arr[$p."postalcode"][LANGUAGE_NONE][0]["value"],
+    );
+    
+    $address = implode($address_fields, " ");    
+    $entity->field_listing_address[LANGUAGE_NONE][0]["value"] = $address;
+    
+    // set the views filter field values
+    $entity->field_listing_category[LANGUAGE_NONE][0]["value"]  = ucwords(str_replace("_", " ", $entity->type));
+    $entity->field_listing_price[LANGUAGE_NONE][0]["value"]     = $arr[$p."listprice"][LANGUAGE_NONE][0]["value"];
+    $entity->field_listing_city[LANGUAGE_NONE][0]["value"]      = $arr[$p."mailingcity"][LANGUAGE_NONE][0]["value"];
+    $entity->field_listing_zip[LANGUAGE_NONE][0]["value"]       = $arr[$p."postalcode"][LANGUAGE_NONE][0]["value"];
+    $entity->field_listing_beds[LANGUAGE_NONE][0]["value"]      = intval($arr[$p."bedrooms"][LANGUAGE_NONE][0]["value"]);
+    $entity->field_baths[LANGUAGE_NONE][0]["value"]     = intval($arr[$p."bathstotal"][LANGUAGE_NONE][0]["value"]);
+    
+    // setup the map
+    /* geocode later get all the listings first
+    $point = geocoder("google", $address);
+    $geoJSON = $point->out("json");
+    
+    $entity->field_listing_location[LANGUAGE_NONE] = array(
+      geofield_compute_values($geoJSON),
+    ); */
+    
+    return $entity;
+  }
+}
