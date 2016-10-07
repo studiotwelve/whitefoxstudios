@@ -5,17 +5,17 @@
  */
 
 function whitefox_menu_menu() {
-    $items['<wfscontainer>'] = array(
+    $items['<container>'] = array(
       'page callback' => 'drupal_not_found',
       'access callback' => TRUE,
       'type' => MENU_CALLBACK,
     );
-    $items['<wfsrow>'] = array(
+    $items['<row>'] = array(
       'page callback' => 'drupal_not_found',
       'access callback' => TRUE,
       'type' => MENU_CALLBACK,
   );
-$items['<wfscol>/%'] = array(
+$items['<col>/%'] = array(
         'page callback' => 'drupal_not_found',
         'access callback' => TRUE,
         'type' => MENU_CALLBACK,
@@ -274,19 +274,19 @@ function whitefox_menu_menu_link_alter(&$item) {
 }
 
 function whitefox_menu_link(&$variables){
-    if(substr($variables['path'], 0,11) == '<wfscontainer>'){
+    if(substr($variables['path'], 0,11) == '<container>'){
         if(arg(0)=='admin' && arg(1)=='structure' && arg(2) == 'menu'){
             return '[Container]';
         }
         return '';
     }
-    if ($variables['path'] == '<wfsrow>') {
+    if ($variables['path'] == '<row>') {
         if(arg(0)=='admin' && arg(1)=='structure' && arg(2) == 'menu'){
             return '[Row]';
         }
         return '';
     }
-    if (substr($variables['path'], 0,5) == '<wfscol>') {
+    if (substr($variables['path'], 0,5) == '<col>') {
         if(arg(0)=='admin' && arg(1)=='structure' && arg(2) == 'menu'){
             return '[Col] '.$variables['text'];
         }
@@ -297,18 +297,18 @@ function whitefox_menu_link(&$variables){
 
 function whitefox_menu_menu_link(&$variables){
     $element = $variables['element'];
-    if(substr($element['#href'], 0,11) == '<wfscontainer>'){
+    if(substr($element['#href'], 0,11) == '<container>'){
        return theme('whitefox_menu_container', $variables);
     }
-    if($element['#href'] == '<wfsrow>'){
+    if($element['#href'] == '<row>'){
        return theme('whitefox_menu_row', $variables);
     }
-    if(substr($element['#href'], 0,5) == '<wfscol>'){
+    if(substr($element['#href'], 0,5) == '<col>'){
        return theme('whitefox_menu_col', $variables);
     }
-
+    
     ////
-
+    
     $icon = "";
     if(isset($element['#localized_options']['link_icon']) && !empty($element['#localized_options']['link_icon'])){
         $element['#title'] = '<i class="fa '.$element['#localized_options']['link_icon'].'"></i> '.$element['#title'];
@@ -321,14 +321,14 @@ function whitefox_menu_menu_link(&$variables){
         preg_match('/<!--begin-->(.*?)<!--end-->/is', $sub_menu, $match);
         if(isset($match[1])) $sub_menu = $match[1];
     }
-    if(substr($element['#href'], 0,11) == '<wfscontainer>'){
+    if(substr($element['#href'], 0,11) == '<container>'){
        $cols = explode('/', $element['#href']);
        $element['#attributes']['class'][] = 'container';
     }
-    if($element['#href'] == '<wfsrow>'){
+    if($element['#href'] == '<row>'){
        $element['#attributes']['class'][] = 'row';
     }
-    if(substr($element['#href'], 0,5) == '<wfscol>'){
+    if(substr($element['#href'], 0,5) == '<col>'){
        $cols = explode('/', $element['#href']);
        $element['#attributes']['data-col'] = 'col-lg-'.$cols[1];
     }

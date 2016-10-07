@@ -1,0 +1,41 @@
+.whitefox-dropdown{
+    background: none repeat scroll 0 0 #FFFFFF;
+    left: 0;
+    position: absolute;
+    width: 100%;
+    z-index: 99;
+}
+.whitefox-dropdown ul ul{
+    display: none;
+}
+.whitefox-dropdown ul ul.menu-open{
+    display: block;
+}
+.whitefox-menu-mega{
+    padding-left: 30px !important;
+    padding-right: 0 !important;
+    max-width: 100%;
+}
+.whitefox-menu-mega >.whitefox-menu-row>.whitefox-menu-col>ul.menu{
+    margin-left: 0 !important;
+}
+.whitefox-dropdown .menu-open>.whitefox-menu-row>.whitefox-menu-col>ul.menu{
+    display: block;
+}
+.whitefox-dropdown li{
+    position: relative;
+    margin:0;
+    padding: 0;
+}
+.whitefox-dropdown ul.menu li a{
+    display: block;
+}
+.whitefox-dropdown.mobile-open{
+    display: block;
+}
+.menu-toggler{
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}

@@ -8,22 +8,6 @@ function wfs_seo_vars(){
   $logo = theme_get_setting("logo", $theme_default);
   $logo_url = file_create_url($logo);
 
-  $sameas = array();
-
-  $social = array(
-    'facebook'    => variable_get('wfs_seo_facebook', false),
-    'google_plus' => variable_get('wfs_seo_google_plus', false),
-    'instagram'   => variable_get('wfs_seo_instagram', false),
-    'linked_in'   => variable_get('wfs_seo_linked_in', false),
-    'pinterest'   => variable_get('wfs_seo_pinterest', false),
-    'twitter'     => variable_get('wfs_seo_twitter', false),
-    'youtube'     => variable_get('wfs_seo_youtube', false),
-  );
-
-  foreach($social as $url){
-    if($url){$sameas[] = $url;}
-  }
-
   $vars = array(
     "company" => array(
       "@context" => "http://schema.org",
@@ -55,8 +39,6 @@ function wfs_seo_vars(){
       "openingHours" => variable_get($pre."hours", NULL),
 
       "logo" => variable_get($pre."logo", $logo_url),
-
-      "sameas" => $sameas
     ),
   );
 
@@ -65,18 +47,16 @@ function wfs_seo_vars(){
   );
 
   foreach($vars["company"] as $key => $val){
-    if($key != 'sameas'){
-      $key = str_replace("@", "", $key);
+    $key = str_replace("@", "", $key);
 
-      if(is_array($val)){
-        foreach($val as $k => $v){
-          $k = str_replace("@", "", $k);
+    if(is_array($val)){
+      foreach($val as $k => $v){
+        $k = str_replace("@", "", $k);
 
-          $variables[$pre.$key."_".$k] = variable_get($pre.$key."_".$k, $v);
-        }
-      } else {
-        $variables[$pre.$key] = variable_get($pre.$key, $val);
+        $variables[$pre.$key."_".$k] = variable_get($pre.$key."_".$k, $v);
       }
+    } else {
+      $variables[$pre.$key] = variable_get($pre.$key, $val);
     }
   }
 
@@ -96,7 +76,6 @@ function wfs_seo_variables(){
     "address_type",
     "geo_type",
     "company_json",
-    "sameas",
   );
 
   foreach($no_var as $value){
@@ -122,18 +101,16 @@ function wfs_seo_variables(){
     if(array_key_exists($k, $map)){
       $k = $map[$k];
     }
-
+    
     if($k=="telephone"){$k="phone";}
 
     $value = is_null($value) ? variable_get($pre.$key, $value) : $value;
 
     $vars[$k] = $value;
   }
-
+  
   $vars["phone"] = variable_get("wfs_seo_phone", false);
   $vars["street"] = variable_get("wfs_seo_street", false);
-  $vars["lat"] = variable_get("wfs_seo_lat", false);
-  $vars["long"] = variable_get("wfs_seo_long", false);
 
   $vars["address"] = variable_get($pre."address", t("@street @city, @state @zip", array(
     "@street" => $vars["street"],
@@ -147,18 +124,18 @@ function wfs_seo_variables(){
     "@address" => $vars["address"],
     "@phone" => str_replace("+1-", "", $vars["phone"]),
   )));
-
+  
   $social = array(
-    'facebook'    => variable_get('wfs_seo_facebook', false),
-    'google_plus' => variable_get('wfs_seo_google_plus', false),
-    'instagram'   => variable_get('wfs_seo_instagram', false),
-    'linked_in'   => variable_get('wfs_seo_linked_in', false),
-    'pinterest'   => variable_get('wfs_seo_pinterest', false),
-    'twitter'     => variable_get('wfs_seo_twitter', false),
-    'youtube'     => variable_get('wfs_seo_youtube', false),
+    'facebook'    => variable_get('wfs_seo_social_facebook', false),
+    'google_plus' => variable_get('wfs_seo_social_google_plus', false),
+    'instagram'   => variable_get('wfs_seo_social_instagram', false),
+    'linked_in'   => variable_get('wfs_seo_social_linked_in', false),
+    'pinterest'   => variable_get('wfs_seo_social_pinterest', false),
+    'twitter'     => variable_get('wfs_seo_social_twitter', false),
+    'youtube'     => variable_get('wfs_seo_social_youtube', false),
   );
-
+  
   $vars += $social;
 
-  return array_filter($vars);
+  return $vars;
 }
