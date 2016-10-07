@@ -1,0 +1,351 @@
+<?php
+
+/*
+ * * Implement hook_block_menu
+ */
+
+function whitefox_menu_menu() {
+    $items['<wfscontainer>'] = array(
+      'page callback' => 'drupal_not_found',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+    );
+    $items['<wfsrow>'] = array(
+      'page callback' => 'drupal_not_found',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+  );
+$items['<wfscol>/%'] = array(
+        'page callback' => 'drupal_not_found',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+);
+  $items['admin/whitefox/menu'] = array(
+      'title' => t('Menu settings'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('whitefox_menu_settings_form'),
+      'access arguments' => array('administer'),
+      'type' => MENU_NORMAL_ITEM
+  );
+  $items['contextual'] = array(
+      'title' => 'The contextual example page',
+      'page callback' => 'contextual_example_page',
+      'page arguments' => array(1),
+      'access callback' => TRUE
+  );
+  return $items;
+}
+
+function whitefox_menu_settings_form() {
+  $form['whitefox_menu_block_count'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Number of blocks',
+      '#default_value' => variable_get('whitefox_menu_block_count', 3)
+  );
+  return system_settings_form($form);
+}
+
+/*
+ * * Implement hook_block_info
+ */
+
+function whitefox_menu_block_info() {
+  $blocks = array();
+  $count = variable_get('whitefox_menu_block_count', 3);
+  for ($i = 1; $i <= $count; $i++) {
+    $blocks['whitefox_menu_block_' . $i] = array(
+        'info' => t('whitefox Dropdown Menu ' . $i),
+        'cache' => DRUPAL_NO_CACHE
+    );
+  }
+  return $blocks;
+}
+
+/*
+ * * Implement hook_block_configure
+ */
+
+function whitefox_menu_block_configure($delta = '') {
+  if (str_replace('whitefox_menu_block_', '', $delta) != $delta) {
+    $number = str_replace('whitefox_menu_block_', '', $delta);
+    $form['whitefox_menu_menu'] = array(
+        '#type' => 'select',
+        '#title' => t('Menu'),
+        '#required' => true,
+        '#default_value' => variable_get('whitefox_menu_menu_' . $number, 'main-menu:0'),
+        '#options' => menu_parent_options(menu_get_menus(), array('mlid' => 0, 'plid' => 0)),
+    );
+    return $form;
+  }
+}
+
+/*
+ * * Implement hook_block_save.
+ */
+
+function whitefox_menu_block_save($delta = '', $edit = array()) {
+  if (str_replace('whitefox_menu_block_', '', $delta) != $delta) {
+    $number = str_replace('whitefox_menu_block_', '', $delta);
+    variable_set('whitefox_menu_menu_' . $number, $edit['whitefox_menu_menu']);
+  }
+}
+
+/*
+ * * Implement hook_block_view
+ */
+
+function whitefox_menu_block_view($delta) {
+  if (str_replace('whitefox_menu_block_', '', $delta) != $delta) {
+    $number = str_replace('whitefox_menu_block_', '', $delta);
+    return _whitefox_menu_block($number);
+  }
+}
+
+/*
+ * *Implements hook_theme()
+ */
+
+function whitefox_menu_theme(&$vars) {
+  $path = drupal_get_path('module', 'whitefox_menu');
+  $themes = array();
+  $themes['whitefox_menu_container'] = array(
+      'template' => 'container',
+      'path' => $path . '/theme',
+      'pattern' => 'whitefox__menu__',
+      'preprocess functions' => array(
+          'template_preprocess',
+          'whitefox_menu_preprocess_container',
+      ),
+      'variables' => array()
+  );
+  $themes['whitefox_menu_row'] = array(
+      'template' => 'row',
+      'path' => $path . '/theme',
+      'pattern' => 'whitefox__menu__',
+      'preprocess functions' => array(
+          'template_preprocess',
+          'whitefox_menu_preprocess_row',
+      ),
+      'variables' => array()
+  );
+  $themes['whitefox_menu_col'] = array(
+      'template' => 'col',
+      'path' => $path . '/theme',
+      'pattern' => 'whitefox__menu__',
+      'preprocess functions' => array(
+          'template_preprocess',
+          'whitefox_menu_preprocess_col',
+      ),
+      'variables' => array()
+  );
+  $themes['whitefox_menu'] = array(
+          'template' => 'whitefoxmenu',
+          'path' => $path . '/theme',
+          'pattern' => 'whitefoxmenu__',
+          'preprocess functions' => array(
+              'template_preprocess',
+              'whitefox_menu_preprocess_whitefox_menu',
+          ),
+      );
+  return $themes;
+}
+
+function whitefox_menu_preprocess_container(&$vars){
+    $href = isset($vars['element']['#href'])?$vars['element']['#href']:"";
+    $args = explode("/", $href);
+    $vars['attributes_array']['class'][] = 'whitefox-menu-mega';
+    //$vars['attributes_array']['class'][] = 'custompadding';
+    //$vars['attributes_array']['data-padding'] = "0";
+    if(isset($args[1])){
+        $vars['attributes_array']['style'] = "width:{$args[1]}px;";
+    }else{
+        $vars['attributes_array']['class'][] = 'container';
+    }
+    $content = render($vars['element']['#below']);
+    preg_match('/<!--begin-->(.*?)<!--end-->/is', $content, $match);
+    if(isset($match[1])) $content = $match[1];
+    $vars['content'] = $content;
+}
+
+function whitefox_menu_preprocess_row(&$vars){
+    $vars['classes_array'][] = 'row';
+    $vars['classes_array'][] = 'whitefox-menu-row';
+    $content = render($vars['element']['#below']);
+    preg_match_all('/<!--begin-->(.*?)<!--end-->/is', $content, $matches);
+    $content2 = "";
+    if(!empty($matches[1])){
+        $content2 = implode("", $matches[1]);
+    }
+    $vars['content'] = empty($content2)?$content:$content2;
+}
+
+function whitefox_menu_preprocess_col(&$vars){
+    $href = $vars['element']['#href'];
+    $args = explode("/", $href);
+    $vars['classes_array'][] = 'col-lg-'.$args[1];
+    $vars['classes_array'][] = 'col-md-'.$args[1];
+    $vars['classes_array'][] = 'col-sm-12';
+    $vars['classes_array'][] = 'col-xs-12';
+    $vars['classes_array'][] = 'whitefox-menu-col';
+    $content = render($vars['element']['#below']);
+    preg_match('/<!--begin-->(.*?)<!--end-->/is', $content, $match);
+    if(isset($match[1])) $content = $match[1];
+    $vars['content'] = $content;
+    $title = $vars['element']['#title'];
+    if($title != '<none>'){
+        $vars['title'] = trim($title);
+    }
+    //print_r($vars); die;
+}
+
+function whitefox_menu_preprocess_whitefox_menu(&$vars) {
+  $vars['html_id'] = drupal_html_id('whitefox-dropdown');
+  $vars['classes_array'][] = 'whitefox-dropdown';
+}
+
+/*
+ * *Helper function to call theme.
+ */
+
+function _whitefox_menu_block($number) {
+  drupal_add_css(drupal_get_path('module', 'whitefox_menu') . '/css/whitefox-mega-menu.css', array('media' => 'screen and (min-width: 992px)'));
+  drupal_add_css(drupal_get_path('module', 'whitefox_menu') . '/css/whitefox-mobile-menu.css', array('media' => 'screen and (max-width: 991px)'));
+  drupal_add_js(drupal_get_path('module', 'whitefox_menu') . '/js/jquery.transform2d.js');
+  drupal_add_js(drupal_get_path('module', 'whitefox_menu') . '/js/whitefox-menu.js');
+  $items = array();
+  $menu = explode(':', variable_get('whitefox_menu_menu_' . $number, 'main-menu:0'));
+  $tree = menu_tree_all_data($menu[0]);
+  $menu_tree = _whitefox_menu_submenu_tree_all_data($tree, $menu[1]);
+  $menu_tree = menu_tree_output($menu_tree);
+  $output = render($menu_tree);
+  $id = 1;
+  $block = array(
+      'subject' => '',
+      'content' => array(
+          '#type' => 'markup',
+          '#markup' => theme('whitefox_menu', array('output' => $output)),
+          '#contextual_links' => array(
+              'contextual_links_example' => array(
+                  'examples/contextual-links',
+                  array($id),
+              ),
+          ),
+      ),
+  );
+  return $block;
+}
+
+function _whitefox_menu_submenu_tree_all_data($tree, $plid = 0) {
+  if ($plid == 0)
+    return $tree;
+  $ret = array();
+  foreach ($tree as $branch) {
+    if ($branch['link']['mlid'] == $plid) {
+      $ret = $branch['below'];
+      return $ret;
+      break;
+    } elseif (is_array($branch['below'])) {
+      $ret = _whitefox_menu_submenu_tree_all_data($branch['below'], $plid);
+      if (!empty($ret))
+        return $ret;
+    }
+  }
+  return $ret;
+}
+
+function whitefox_menu_form_menu_edit_item_alter(&$form, &$form_state) {
+  if (isset($form['mlid']['#value'])) {
+    $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form['mlid']['#value']))->fetchField());
+  }
+  if (!isset($options['link_icon'])) {
+    $options['link_icon'] = '';
+  }
+  $form['options']['link_icon'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Link icon'),
+      '#default_value' => $options['link_icon'],
+  );
+}
+
+function whitefox_menu_menu_link_alter(&$item) {
+  if(isset($_POST['options']['link_icon'])){
+      $item['options']['link_icon'] = $_POST['options']['link_icon'];
+  }
+}
+
+function whitefox_menu_link(&$variables){
+    if(substr($variables['path'], 0,11) == '<wfscontainer>'){
+        if(arg(0)=='admin' && arg(1)=='structure' && arg(2) == 'menu'){
+            return '[Container]';
+        }
+        return '';
+    }
+    if ($variables['path'] == '<wfsrow>') {
+        if(arg(0)=='admin' && arg(1)=='structure' && arg(2) == 'menu'){
+            return '[Row]';
+        }
+        return '';
+    }
+    if (substr($variables['path'], 0,5) == '<wfscol>') {
+        if(arg(0)=='admin' && arg(1)=='structure' && arg(2) == 'menu'){
+            return '[Col] '.$variables['text'];
+        }
+        return '';
+    }
+    return theme('whitefox_menu_link_default',$variables);
+}
+
+function whitefox_menu_menu_link(&$variables){
+    $element = $variables['element'];
+    if(substr($element['#href'], 0,11) == '<wfscontainer>'){
+       return theme('whitefox_menu_container', $variables);
+    }
+    if($element['#href'] == '<wfsrow>'){
+       return theme('whitefox_menu_row', $variables);
+    }
+    if(substr($element['#href'], 0,5) == '<wfscol>'){
+       return theme('whitefox_menu_col', $variables);
+    }
+
+    ////
+
+    $icon = "";
+    if(isset($element['#localized_options']['link_icon']) && !empty($element['#localized_options']['link_icon'])){
+        $element['#title'] = '<i class="fa '.$element['#localized_options']['link_icon'].'"></i> '.$element['#title'];
+        $element['#localized_options']['html'] = true;
+    }
+    $sub_menu = '';
+
+    if ($element['#below']) {
+        $sub_menu = drupal_render($element['#below']);
+        preg_match('/<!--begin-->(.*?)<!--end-->/is', $sub_menu, $match);
+        if(isset($match[1])) $sub_menu = $match[1];
+    }
+    if(substr($element['#href'], 0,11) == '<wfscontainer>'){
+       $cols = explode('/', $element['#href']);
+       $element['#attributes']['class'][] = 'container';
+    }
+    if($element['#href'] == '<wfsrow>'){
+       $element['#attributes']['class'][] = 'row';
+    }
+    if(substr($element['#href'], 0,5) == '<wfscol>'){
+       $cols = explode('/', $element['#href']);
+       $element['#attributes']['data-col'] = 'col-lg-'.$cols[1];
+    }
+    $output = l($element['#title'], $element['#href'], $element['#localized_options']);
+    return '<li' . drupal_attributes($element['#attributes']) . '>' . $output . $sub_menu . "</li>\n";
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ *
+ * Intercepts hook_link().
+ */
+function whitefox_menu_theme_registry_alter(&$registry) {
+  // Save previous value from registry in case another module/theme
+  // overwrites link.
+  $registry['whitefox_menu_link_default'] = $registry['link'];
+  $registry['link']['function'] = 'whitefox_menu_link';
+  $registry['whitefox_menu_menu_link_default'] = $registry['menu_link'];
+  $registry['menu_link']['function'] = 'whitefox_menu_menu_link';
+}

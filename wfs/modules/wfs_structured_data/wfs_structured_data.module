@@ -1,12 +1,12 @@
 <?php
 function wfs_structured_data_menu() {
-  $items['admin/white-fox-studios/structured-data'] = array(
+  $items['admin/whitefox/structured-data'] = array(
     'title' => 'Structured Data',
     'description' => 'Configure settings associated with Google Structured Data.',
     'access arguments' => array('administer site configuration'),
   );
   
-  $items['admin/white-fox-studios/structured-data/sitelinks_search_box'] = array(
+  $items['admin/whitefox/structured-data/sitelinks_search_box'] = array(
     'title' => 'Google Sitelinks Search Box',
     'description' => 'Configure settings associated with Google Sitelinks Search Box.',
     'page callback' => 'drupal_get_form',
@@ -39,7 +39,6 @@ EOL;
   
   $e = array(
     "#type" => "markup",
-//    "#markup" => variable_get("wfs_structured_data_sitelinks_search_box", $s),
     "#markup" => $s,
   );
   

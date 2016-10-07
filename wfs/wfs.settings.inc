@@ -15,7 +15,7 @@ function wfs_admin_settings_form(){
     $form[$name] = array(
       "#type" => "checkbox",
       "#title" => t("Load: @file", array("@file" => $file)),
-      "#default_value" => variable_get($name, $value),
+      "#attributes" => array("checked" => (variable_get($name, $value) == 1) ? "checked" : ""),
     );
   }
 

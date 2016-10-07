@@ -1,4 +1,4 @@
-name = @White Fox Studios
-description = Do Stuff Thats Awesome for White Fox Studios.
-package = @WhiteFoxStudios
+name = @ White Fox
+description = Proprietary White Fox Admin Module with Front end helpers.
+package = @ White Fox
 core = 7.x

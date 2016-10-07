@@ -1,0 +1,4 @@
+name = @ White Fox Menu
+description = Fork the dexp_menu module and cleanup for white fox
+package = @ White Fox
+core = 7.x

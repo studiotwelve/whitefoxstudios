@@ -102,7 +102,7 @@ function wfs_shortcodes_shortcode_block($attrs, $text) {
 
 function wfs_shortcodes_shortcode_block_tip($format, $long) {
   $output = array();
-  $output[] = '<p><strong>Block:</strong><br/>[block admin_url="admin/structure/block/manage/progressive_cms/gmap/configure"][/block]</br>';
+  $output[] = '<p><strong>Block:</strong><br/>[block admin_url="admin/structure/block/manage/block/12/configure"][/block]</br>';
   $output[] = '<strong>admin_url</strong> - URL of the block edit page.</p>';
   return implode(' ', $output);
 }
